@@ -5,8 +5,9 @@ video = Video()
 
 while True:
   try:
-    cv2.imshow("feed", video.get_frame_nparr())
-    cv2.waitKey(0)
+    img = video.get_frame_nparr()
+    cv2.imshow("feed", img)
+    cv2.waitKey(1)
   except KeyboardInterrupt:
     cv2.destroyAllWindows()
     break
