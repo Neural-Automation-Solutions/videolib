@@ -3,6 +3,8 @@ import zmq
 import base64
 import numpy as np
 
+from typing import Union, Tuple, List
+
 class Video:
   '''
   A class that acts as a wrapper around the video capture service.
@@ -26,16 +28,31 @@ class Video:
     '''
     return self.footage_socket.recv_string()
 
-  def get_frame_bytes(self) -> bytes:
+  def get_frame_bytes(self, _return_string=False) -> bytes:
     '''
     Returns the decoded base64 string from the TCP socket.
     '''
-    return base64.b64decode(self.get_frame_string())
+    fstring = self.get_frame_string()
+    b64 = base64.b64decode(fstring)
+    if _return_string:
+      return b64, fstring
+    return b64
 
-  def get_frame_nparr(self) -> np.array:
+  def get_frame_nparr(self, _return_string=False, _return_bytes=False) -> Union[Tuple[np.ndarray, bytes, str], Tuple[np.ndarray, bytes], Tuple[np.ndarray, str], np.ndarray]:
     '''
     Returns a numpy array of the frame received from the TCP socket.
     '''
-    img = self.get_frame_bytes()
+    img, fstring = self.get_frame_bytes(_return_string=True)
     npimg = np.frombuffer(img, dtype=np.uint8)
-    return cv2.imdecode(npimg, 1)
+    nparr = cv2.imdecode(npimg, 1)
+
+    if _return_string:
+      if _return_bytes:
+        return nparr, img, fstring
+      else:
+        return nparr, fstring
+
+    if _return_bytes:
+      return nparr, img
+
+    return nparr
